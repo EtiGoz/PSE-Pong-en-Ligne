@@ -1,0 +1,10 @@
+#makefile Pong
+
+init.c: init.c init.h
+	gcc -c init.c 
+
+main.o: main.c 
+	gcc -c main.c
+
+Pong: main.o init.o
+	gcc main.o init.o -o pong $(sdl2-config --cflags --libs)
