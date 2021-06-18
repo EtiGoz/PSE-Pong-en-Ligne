@@ -6,22 +6,35 @@
 int ligne;
 int sock;
 char  dest[20];
+pthread_t receiver_t;
+Data data;
+
+void *threadReceiver(void *arg)
+{
+  int lgLue;
+	while(1){
+  	lgLue = read(sock, &data, sizeof(Data));
+    joueur1.y=data.P1_y;
+    joueur2.y=data.P2_y;
+	  Balle.x=data.ball_x;
+    Balle.y=data.ball_y;
+    printf("P1: %d P2: %d ",data.P1_y)
+    if (lgLue == -1)
+    {
+      printf("Server disconnected.\n");
+      continuer=0;
+    }
+  }
+}
 
 void initialiser_video();
-char * extrairesouschaine(char*source,int pos,int len);
 
 int main(int argc, char *argv[]) {
-	short port;
-  int ret, ecoute;
+  int ret;
   struct sockaddr_in *adrServ;
-  struct sockaddr_in adrEcoute;
   
-  int lgLue;
 
   signal(SIGPIPE, SIG_IGN);
-
-
-	port = (short)atoi(argv[1]);
 	
   if (argc != 3)
     erreur("usage: %s machine port\n", argv[0]);
@@ -43,29 +56,6 @@ int main(int argc, char *argv[]) {
   printf("%s: connecting the socket\n", CMD);
   ret = connect(sock, (struct sockaddr *)adrServ, sizeof(struct sockaddr_in));
   
-  printf("%s: creating a socket\n", CMD);
-  ecoute = socket(AF_INET, SOCK_STREAM, 0);
-  if (ecoute < 0)
-    erreur_IO("socket");
-  
-  adrEcoute.sin_family = AF_INET;
-  adrEcoute.sin_addr.s_addr = INADDR_ANY;
-  adrEcoute.sin_port = htons(port);
-  printf("%s: binding to INADDR_ANY address on port %d\n", CMD, port);
-  ret = bind(ecoute, (struct sockaddr *)&adrEcoute, sizeof(adrEcoute));
-  if (ret < 0)
-    erreur_IO("bind");
-  
-  printf("%s: listening to socket\n", CMD);
-  ret = listen(ecoute, 5);
-  if (ret < 0)
-    erreur_IO("listen");
-
-  if (ret < 0)
-    erreur_IO("connect");
-  
-  printf("%s: accepting a connection\n", CMD);
-
   initialiser_video();//Crée la fenêtre
     
 	joueur1.w=WIDTH_PLAYER;
@@ -79,7 +69,7 @@ int main(int argc, char *argv[]) {
   Balle.y=HEIGHT/2;
   Balle.w=WIDTH_BALL;
   Balle.h=HEIGHT_BALL;
-  Data data;
+  pthread_create(&receiver_t,NULL,threadReceiver,NULL);
 	do{
 
       continuer=listen_event(event);
@@ -92,23 +82,10 @@ int main(int argc, char *argv[]) {
           continuer=0;
         }
 
-			lgLue = read(sock, &data, sizeof(Data));
-    	if (lgLue == -1)
-      	{
-          printf("Server disconnected.\n");
-          continuer=0;
-        }
-
-      joueur1.y=data.P1_y;
-      joueur2.y=data.P2_y;
-	    Balle.x=data.ball_x;
-      Balle.y=data.ball_y;
 
       SDL_SetRenderDrawColor(renderer,0,0,0,255);
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);    
-
-
 	  	SDL_SetRenderDrawColor(renderer,255,255,255,255);
       SDL_RenderFillRect(renderer,&joueur1);
       SDL_RenderFillRect(renderer,&joueur2);
@@ -123,8 +100,7 @@ int main(int argc, char *argv[]) {
         SDL_DestroyWindow(window);
     SDL_Quit();
     
-    if (close(ecoute) == -1)
-    	erreur_IO("fermeture ecoute");
+
     if (close(sock) == -1)
     	erreur_IO("fermeture socket");
 

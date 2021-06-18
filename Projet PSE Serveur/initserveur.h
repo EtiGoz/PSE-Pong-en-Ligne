@@ -8,7 +8,7 @@
 #define VITESSE_PLAYER 12
 #define WIDTH_BALL 30
 #define HEIGHT_BALL 30
-#define VITESSE_BALL 20
+#define VITESSE_BALL 14
 
 #define POSITION_X_J1 100
 #define POSITION_X_J2 1150
