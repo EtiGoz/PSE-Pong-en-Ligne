@@ -15,7 +15,7 @@
 
 #define CMD "serveur"
 
-typedef struct Salle_de_Jeu
+typedef struct room_de_Jeu
 {
   pthread_t idThread;               /* identifiant du thread */
   int libre;                  /* indicateur de terminaison */
@@ -25,7 +25,7 @@ typedef struct Salle_de_Jeu
   int socket_j2;                  /*canal de communication joueur2*/
   sem_t sem_j1;                  /* semaphore de reveil joueur1 */
   sem_t sem_j2;                 /*semaphore de reveil joueur2*/
-} Salle_de_Jeu;
+} room_de_Jeu;
 
 typedef struct Data
 {
@@ -36,10 +36,10 @@ typedef struct Data
 
 void initBall(Data *data,int *direct_h, int *direct_v);
 void updateBall(Data *data,int *direct_h, int *direct_v);
-void *threadSalleJeu(void *arg);
+void *threadroomJeu(void *arg);
 void updatePlayer(int *player, int *direction);
 void sendData(int sock_P1, int sock_P2, Data *data);
 
-Salle_de_Jeu salle[NB_THREADS];
+room_de_Jeu room[NB_THREADS];
 
 int continuer;

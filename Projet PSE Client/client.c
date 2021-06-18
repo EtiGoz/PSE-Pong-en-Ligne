@@ -18,7 +18,7 @@ void *threadReceiver(void *arg)
     player2.y=data.P2_y;
 	  Balle.x=data.ball_x;
     Balle.y=data.ball_y;
-    printf("P1: %d P2: %d ",data.P1_y)
+    printf("P1: %d P2: %d ",data.P1_y, data.P2_y);
     if (lgLue == -1)
     {
       printf("Server disconnected.\n");

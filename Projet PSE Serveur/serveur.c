@@ -199,8 +199,8 @@ int main(int argc, char *argv[])
     int valsem_p1,valsem_p2;
     int room_free;
     short port;
-    int listen, canal, ret;
-    struct sockaddr_in adrlisten, adrClient;
+    int listener, canal, ret;
+    struct sockaddr_in adrecoute, adrClient;
     unsigned int lgAdrClient;
 
     if (argc != 2)
@@ -209,20 +209,20 @@ int main(int argc, char *argv[])
     port = (short)atoi(argv[1]);
 
     printf("%s: creating a socket\n", CMD);
-    listen = socket (AF_INET, SOCK_STREAM, 0);
-    if (listen < 0)
+    listener = socket (AF_INET, SOCK_STREAM, 0);
+    if (listener < 0)
         erreur_IO("socket");
     
-    adrlisten.sin_family = AF_INET;
-    adrlisten.sin_addr.s_addr = INADDR_ANY;
-    adrlisten.sin_port = htons(port);
+    adrecoute.sin_family = AF_INET;
+    adrecoute.sin_addr.s_addr = INADDR_ANY;
+    adrecoute.sin_port = htons(port);
     printf("%s: binding to INADDR_ANY address on port %d\n", CMD, port);
-    ret = bind (listen,  (struct sockaddr *)&adrlisten, sizeof(adrlisten));
+    ret = bind (listener,  (struct sockaddr *)&adrecoute, sizeof(adrecoute));
     if (ret < 0)
         erreur_IO("bind");
     
     printf("%s: listening to socket\n", CMD);
-    ret = listen (listen, 5);
+    ret = listen (listener, 5);
     if (ret < 0)
         erreur_IO("listen");
         
@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
         printf("%s: accepting a connection\n", CMD);
         lgAdrClient = sizeof(adrClient);
 
-        canal = accept(listen, (struct sockaddr *)&adrClient, &lgAdrClient);
+        canal = accept(listener, (struct sockaddr *)&adrClient, &lgAdrClient);
 
         if (canal < 0)
             erreur_IO("accept");
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (close(listen) == -1)
+    if (close(listener) == -1)
         erreur_IO("fermeture listen");  
 
 

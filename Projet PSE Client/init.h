@@ -22,10 +22,10 @@
 SDL_Window *window;
 SDL_Renderer *renderer;
 
-int continuer;
+int pursue;
 int touche8,touche2,touche3,touche9;
-SDL_Rect joueur1;
-SDL_Rect joueur2;
+SDL_Rect player1;
+SDL_Rect player2;
 SDL_Rect Balle;
 
 int score_j1,score_j2;
