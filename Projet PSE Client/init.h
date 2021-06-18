@@ -31,6 +31,12 @@ SDL_Rect Balle;
 int score_j1,score_j2;
 SDL_Event event;
 
+typedef struct Data
+{
+  int P1_y,P2_y;
+  int score_P1,score_P2;
+  int ball_x, ball_y;  
+} Data;
 
 void initialiser_video();
 unsigned char listen_event(SDL_Event event) ;

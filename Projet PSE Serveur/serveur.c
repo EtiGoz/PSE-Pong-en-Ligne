@@ -1,103 +1,99 @@
 #include "initserveur.h"
-#include <stdio.h>
-#include <time.h>
-#include <stdlib.h>
 
-#define WIDTH 1280
-#define HEIGHT 720
-#define WIDTH_PLAYER 30
-#define HEIGHT_PLAYER 150
-#define VITESSE_PLAYER 12
-#define WIDTH_BALL 30
-#define HEIGHT_BALL 30
-#define VITESSE_BALL 14
-
-#define POSITION_X_J1 100
-#define POSITION_X_J2 1150
-
-#define CMD           "serveur"
 
 pthread_mutex_t monmutex= PTHREAD_MUTEX_INITIALIZER;
 
-Salle_de_Jeu salle[NB_THREADS];
 
-int continuer;
+void updatePlayer(int *player, int *direction){
+	
+	if (*direction==2 && *player+HEIGHT_PLAYER< HEIGHT) {
+        *player+=VITESSE_PLAYER;printf("%i", *direction);}
+    if (*direction==3 && *player>0){
+        *player-=VITESSE_PLAYER;printf("%i", *direction);}
+}
 
-void initBall(int *Ball_x,int *Ball_y,int *direct_h, int *direct_v);
-void updateBall(int *Ball_x,int *Ball_y, int *P1_y, int *P2_y, int *score_P1, int *score_P2,int *direct_h, int *direct_v);
-void initBall(int *Ball_x,int *Ball_y,int *direct_h, int *direct_v)
+void initBall(Data *data,int *direct_h, int *direct_v)
 {
-    *Ball_x=WIDTH/2;
-    *Ball_y=HEIGHT/2;
+    data->ball_x=WIDTH/2;
+    data->ball_y=HEIGHT/2;
     *direct_h = rand()%2;
     *direct_v = rand()%2;
 }
 
-void updateBall(int *Ball_x,int *Ball_y, int *P1_y, int *P2_y, int *score_P1, int *score_P2,int *direct_h, int *direct_v)
+void updateBall(Data *data,int *direct_h, int *direct_v)
 {
-    if (*Ball_x<=0) //Si la balle atteint le but de J1
+    if (data->ball_x <=0) //Si la balle atteint le but de J1
     {
-        *score_P2+=1;//J2 gagne 1 point
-        initBall(Ball_x,Ball_y,direct_h,direct_v);//La balle est remise au centre
-        printf("Score: P1: %d, P2: %d\n",*score_P1,*score_P2);
+        data->score_P2+=1;//J2 gagne 1 point
+        initBall(data,direct_h,direct_v);//La balle est remise au centre
+        printf("Score: P1: %d, P2: %d\n",data->score_P1,data->score_P2);
     }
-    else if (*Ball_x>=WIDTH) //Si la balle atteint le but de J2
+    else if (data->ball_x>=WIDTH) //Si la balle atteint le but de J2
     {
-        *score_P1+=1;  //J1 gagne 1 point
-        initBall(Ball_x,Ball_y,direct_h,direct_v);//La balle est remise au centre
-        printf("Score: P1: %d, P2: %d\n",*score_P1,*score_P2);
+        data->score_P1+=1;  //J1 gagne 1 point
+        initBall(data,direct_h,direct_v);//La balle est remise au centre
+        printf("Score: P1: %d, P2: %d\n",data->score_P1,data->score_P2);
     }
     //--------------------------------------------------------------------------------------------------------
-    if(*Ball_x<POSITION_X_J1+WIDTH_PLAYER && *Ball_x>POSITION_X_J1)//Détection de collision avec le Joueur 1
+    if(data->ball_x<POSITION_X_J1+WIDTH_PLAYER && data->ball_x>POSITION_X_J1)//Détection de collision avec le Joueur 1
     {
-        if(*Ball_y<*P1_y+HEIGHT_PLAYER && *Ball_y>*P1_y)
+        if(data->ball_y<data->P1_y+HEIGHT_PLAYER && data->ball_y>data->P1_y)
         {
             *direct_h=1;           
    
         }
         
-
     }
-    else if(*Ball_x>POSITION_X_J2-WIDTH_PLAYER && *Ball_x<POSITION_X_J2)//Détection de collision avec le Joueur 2
+    else if(data->ball_x>POSITION_X_J2-WIDTH_PLAYER && data->ball_x<POSITION_X_J2)//Détection de collision avec le Joueur 2
     {
-        if(*Ball_y<*P2_y+HEIGHT_PLAYER && *Ball_y>*P2_y)
+        if(data->ball_y<data->P2_y+HEIGHT_PLAYER && data->ball_y>data->P2_y)
         {
             *direct_h=0;
         }
         
-
     }
-
     //--------------------------------------------------------------------------------------------------------
-    if (*Ball_y<=0) //Si la balle atteint le bord en bas
+    if (data->ball_y<=0) //Si la balle atteint le bord en bas
     {
         *direct_v=1;//Elle rebondit vers le haut
     }
-    else if (*Ball_y>=HEIGHT) //Si la balle atteint le bord en haut
+    else if (data->ball_y>=HEIGHT) //Si la balle atteint le bord en haut
     {
         *direct_v=0;//Elle rebondit vers le bas
     }
 
     if (*direct_h)//Update de la position de la balle en horizontal, en fonction de sa trajectoire
     {
-        *Ball_x+=VITESSE_BALL;
+        data->ball_x+=VITESSE_BALL;
     }
     else
     {
-        *Ball_x-=VITESSE_BALL;
+        data->ball_x-=VITESSE_BALL;
     }
     if (*direct_v)//Update de la position de la balle en vertical, en fonction de sa trajectoire
     {
-        *Ball_y+=VITESSE_BALL;
+        data->ball_y+=VITESSE_BALL;
     }
     else
     {
-        *Ball_y-=VITESSE_BALL;
+        data->ball_y-=VITESSE_BALL;
     }
 }
 
+void sendData(int sock_P1, int sock_P2, Data *data)
+{
+            int ret;
+            //écriture dans P1
+            ret=write(sock_P1,data,sizeof(Data));
+            if (ret < 0)
+                printf("Player 1 left\n");
+            //écriture dans P2
+            ret=write(sock_P2,data,sizeof(Data));
+            if (ret < 0)
+                printf("Player 2 left\n");
 
-void *threadSalleJeu(void *arg);
+}                                
+
 void creerCohorteWorkers(void)
 {
     int ret;
@@ -118,7 +114,8 @@ int placementPlayer(void)//Permet de placer un joueur. Retourne l'indice dans le
 {
     int cpt=0;
     int player_1_present,player_2_present;
-
+    sem_getvalue(&salle[cpt].sem_j1,&player_1_present);
+    sem_getvalue(&salle[cpt].sem_j2,&player_2_present);
     printf("Looking for a room with a player..\n");
 
     while(player_1_present==1 && player_2_present==1 && cpt<NB_THREADS)
@@ -137,58 +134,39 @@ int placementPlayer(void)//Permet de placer un joueur. Retourne l'indice dans le
 void *threadSalleJeu(void *arg) 
 {
     Salle_de_Jeu *my_room=(Salle_de_Jeu*)arg;
-    char lineP1[LIGNE_MAX];
-    char lineP2[LIGNE_MAX];
     int lP1,lP2;
-    int P1_y,P2_y; //Players position
-    P1_y=200;
-    P2_y=100;
-    int Ball_x,Ball_y; //Ball position
+    Data data; //Structure allowing data to be sent to clients. 
     int direct_h; //Si 0: La Balle va vers la gauche. Si 1: vers la droite
     int direct_v; //Si 0: La Balle va vers le bas. Si 1: vers le haut
-    int score_P1, score_P2;
-    score_P1=0;
-    score_P2=0;
-    char message[LIGNE_MAX];
-    char *mP1_y="player 1 ";
-    char *mP2_y="player 2 ";
-    char *mBall_x="ballx ";
-    char *mBall_y="bally ";
-    char valP1_y[LIGNE_MAX];
-    char valP2_y[LIGNE_MAX];
-    char valBall_x[LIGNE_MAX];
-    char valBall_y[LIGNE_MAX];
-
+    data.P1_y=200;
+    data.P2_y=200;
+    data.score_P1=0;
+    data.score_P2=0;
     printf("Room n°%d : turned on\n",my_room->tid);
     while (1) 
     {
         if (my_room->socket_j1==-1)
         {
-            printf("Room n°%d : waiting for Player 1\n",my_room->tid);
+            printf("Room n°%d : waiting for Player 1...\n",my_room->tid);
             sem_wait(&my_room->sem_j1);
             sem_post(&my_room->sem_j1);
             printf("Room n°%d : Player 1 is here\n",my_room->tid);
         }
         if (my_room->socket_j2==-1)
         {
-            printf("Room n°%d : waiting for Player 2\n",my_room->tid);
-            sem_wait(&my_room->sem_j2);
+            printf("Room n°%d : waiting for Player 2...\n",my_room->tid);
+            sem_wait(&my_room->sem_j2);            
             sem_post(&my_room->sem_j2);
-            printf("Room n°%d : Player 2 is here\n",my_room->tid);
-            printf("Launching Game.\n");
+            printf("Room n°%d : Player 2 is here. Launching Game.\n",my_room->tid);
         }
-
-
-        initBall(&Ball_x,&Ball_y,&direct_h,&direct_v);
-        printf("Ballx: %d, Bally: %d, direction h : %d, direction v: %d\n",Ball_x,Ball_y,direct_h,direct_v);
+        initBall(&data,&direct_h,&direct_v);
+        printf("Ballx: %d, Bally: %d, direction h : %d, direction v: %d\n",data.ball_x,data.ball_y,direct_h,direct_v);
 
         while(my_room->socket_j1>-1 && my_room->socket_j2>-1)//Tant que les joueurs sont connectés.
         {
-            strcpy(message,"");
-
-            lP1 = lireLigne(my_room->socket_j1, lineP1);
-            lP2 = lireLigne(my_room->socket_j2, lineP2);
-
+            read(my_room->socket_j1,&lP1,sizeof(int));
+            read(my_room->socket_j2,&lP2,sizeof(int));
+            
             if (lP1 == -1 || lP2 == -1)
                 erreur_IO("wrong lecture");
 
@@ -200,27 +178,22 @@ void *threadSalleJeu(void *arg)
                 sem_wait(&my_room->sem_j1);
                 sem_wait(&my_room->sem_j2);
             }
-            updateBall(&Ball_x,&Ball_y,&P1_y,&P2_y,&score_P1,&score_P2,&direct_h,&direct_v);
-            
-            //écriture dans P1
-            write(my_room->socket_j1,&P1_y,sizeof(int));
-            write(my_room->socket_j1,&P2_y,sizeof(int));
-            write(my_room->socket_j1,&Ball_x,sizeof(int));
-            write(my_room->socket_j1,&Ball_y,sizeof(int));
 
-            write(my_room->socket_j2,&P1_y,sizeof(int));
-            write(my_room->socket_j2,&P2_y,sizeof(int));
-            write(my_room->socket_j2,&Ball_x,sizeof(int));
-            write(my_room->socket_j2,&Ball_y,sizeof(int));
+			updatePlayer(&data.P1_y, &lP1);
+			updatePlayer(&data.P2_y, &lP2);
+            updateBall(&data,&direct_h,&direct_v);
+            sendData(my_room->socket_j1,my_room->socket_j2,&data);
+
             //printf("Sent: P1: %d, P2: %d, BallX: %d, Bally: %d\n",P1_y,P2_y,Ball_x,Ball_y);
-            sleep(0.01);
+            sleep(0.016);
 
         }
     }
 }
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
 
     srand(time(NULL));   // Initialisation du timer pour le random. Should only be called once.    
     int valsem_p1,valsem_p2;
