@@ -5,10 +5,10 @@
 #define HEIGHT 720
 #define WIDTH_PLAYER 30
 #define HEIGHT_PLAYER 150
-#define VITESSE_PLAYER 12
+#define PLAYER_SPEED 12
 #define WIDTH_BALL 30
 #define HEIGHT_BALL 30
-#define VITESSE_BALL 14
+#define BALL_SPEED 14
 
 #define POSITION_X_J1 100
 #define POSITION_X_J2 1150

@@ -3,7 +3,7 @@
 
 #define CMD   "client"
 
-int ligne;
+int line;
 int sock;
 char  dest[20];
 pthread_t receiver_t;
@@ -14,20 +14,20 @@ void *threadReceiver(void *arg)
   int lgLue;
 	while(1){
   	lgLue = read(sock, &data, sizeof(Data));
-    joueur1.y=data.P1_y;
-    joueur2.y=data.P2_y;
+    player1.y=data.P1_y;
+    player2.y=data.P2_y;
 	  Balle.x=data.ball_x;
     Balle.y=data.ball_y;
     printf("P1: %d P2: %d ",data.P1_y)
     if (lgLue == -1)
     {
       printf("Server disconnected.\n");
-      continuer=0;
+      pursue=0;
     }
   }
 }
 
-void initialiser_video();
+void initialize_video();
 
 int main(int argc, char *argv[]) {
   int ret;
@@ -56,15 +56,15 @@ int main(int argc, char *argv[]) {
   printf("%s: connecting the socket\n", CMD);
   ret = connect(sock, (struct sockaddr *)adrServ, sizeof(struct sockaddr_in));
   
-  initialiser_video();//Crée la fenêtre
+  initialize_video();//Crée la fenêtre
     
-	joueur1.w=WIDTH_PLAYER;
-  joueur1.h=HEIGHT_PLAYER;
-  joueur1.x=POSITION_X_J1;
+	player1.w=WIDTH_PLAYER;
+  player1.h=HEIGHT_PLAYER;
+  player1.x=POSITION_X_J1;
     
-  joueur2.w=WIDTH_PLAYER;
-  joueur2.h=HEIGHT_PLAYER;
-  joueur2.x=POSITION_X_J2;
+  player2.w=WIDTH_PLAYER;
+  player2.h=HEIGHT_PLAYER;
+  player2.x=POSITION_X_J2;
 	Balle.x=WIDTH/2;
   Balle.y=HEIGHT/2;
   Balle.w=WIDTH_BALL;
@@ -72,14 +72,14 @@ int main(int argc, char *argv[]) {
   pthread_create(&receiver_t,NULL,threadReceiver,NULL);
 	do{
 
-      continuer=listen_event(event);
-      ligne=1;
+      pursue=listen_event(event);
+      line=1;
 
-			ret=write(sock,&ligne,sizeof(int));
+			ret=write(sock,&line,sizeof(int));
         if (ret<0)
         {
           printf("Server disconnected.\n");
-          continuer=0;
+          pursue=0;
         }
 
 
@@ -87,12 +87,12 @@ int main(int argc, char *argv[]) {
       SDL_RenderClear(renderer);
       SDL_RenderPresent(renderer);    
 	  	SDL_SetRenderDrawColor(renderer,255,255,255,255);
-      SDL_RenderFillRect(renderer,&joueur1);
-      SDL_RenderFillRect(renderer,&joueur2);
+      SDL_RenderFillRect(renderer,&player1);
+      SDL_RenderFillRect(renderer,&player2);
       SDL_RenderFillRect(renderer,&Balle);
       SDL_RenderPresent(renderer);
       SDL_Delay(16); 
-    }while(continuer==1);
+    }while(pursue==1);
       	/* Impératif pour quitter en sécurité. ----------------------------------------------------------------------------------------------------------*/
 		if(NULL != renderer)
         SDL_DestroyRenderer(renderer);
@@ -110,19 +110,19 @@ int main(int argc, char *argv[]) {
 
 unsigned char listen_event(SDL_Event event)//Permet de gérer l'appui et le relâchement des touches
 { 
-	unsigned char continuer=1; 
+	unsigned char pursue=1; 
 	int ret;
 	while(SDL_PollEvent(&event)) 
 	{ 
         switch(event.type) 
             { 
-                case SDL_QUIT: {continuer = 0;break;} 
+                case SDL_QUIT: {pursue= 0;break;} 
                 case SDL_KEYDOWN:
                 {
                 	switch(event.key.keysym.sym)
                 	{
-                		case SDLK_KP_2:{ligne=2;ret=write(sock,&ligne,sizeof(int));break;}
-                		case SDLK_KP_8:{ligne=3;ret=write(sock,&ligne,sizeof(int));break;}
+                		case SDLK_KP_2:{line=2;ret=write(sock,&line,sizeof(int));break;}
+                		case SDLK_KP_8:{line=3;ret=write(sock,&line,sizeof(int));break;}
 
                 		default:{ break;}
                 	};break;
@@ -130,12 +130,12 @@ unsigned char listen_event(SDL_Event event)//Permet de gérer l'appui et le rel�
                 default:{ break;} 
             }            
 	} 
-    return continuer; 
+    return pursue; 
 }
 
 
 
-void initialiser_video()
+void initialize_video()
 {
     /* Initialisation, création de la fenêtre et du renderer. --------------------------------------------------------------*/
     if(0 != SDL_Init(SDL_INIT_VIDEO))
