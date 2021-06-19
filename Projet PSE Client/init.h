@@ -27,6 +27,12 @@ SDL_Rect Ball;
 int score_j1,score_j2;
 SDL_Event event;
 
+
+int sock;
+char  dest[20];
+pthread_t receiver_t;
+Data data;
+
 typedef struct Data
 {
   int P1_y,P2_y;
