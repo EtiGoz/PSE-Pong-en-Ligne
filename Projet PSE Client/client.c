@@ -16,6 +16,10 @@ void *threadReceiver(void *arg) //thread de lecture des donnée envoyées par le
       pursue=0;
       sleep(1);
     }
+	if(P1_score!=Data.score_P1||P1_score!=Data.score_P1){
+		printf("P1: %i		P2: %i", Data.score_P1 , Data.score_P1);
+		P1_score=Data.score_P1;
+		P2_score=Data.score_P2;}	
   }
 }
 
