@@ -28,10 +28,7 @@ int score_j1,score_j2;
 SDL_Event event;
 
 
-int sock;
-char  dest[20];
-pthread_t receiver_t;
-Data data;
+
 
 typedef struct Data
 {
@@ -42,4 +39,9 @@ typedef struct Data
 
 void initialize_video();
 unsigned char listen_event(SDL_Event event) ;
+
+int sock;
+char  dest[20];
+pthread_t receiver_t;
+Data data;
 #endif
