@@ -2,12 +2,8 @@
 
 #define CMD   "client"
 
-int sock;
-char  dest[20];
-pthread_t receiver_t;
-Data data;
 
-void *threadReceiver(void *arg)
+void *threadReceiver(void *arg) //thread de lecture des donnée envoyées par le serveur (position des joueurs et de la balle est scores des joueurs)
 {
   Data *my_data=(Data*)arg;
 
@@ -23,7 +19,7 @@ void *threadReceiver(void *arg)
   }
 }
 
-void sendDirection(int sock,int direct)
+void sendDirection(int sock,int direct) // Envoie l'inforamtion des touches appuyé au seveur (2 si c'est la touche 2 (down) et 3 si c'est la touche 8 (up))
 {
   int ret;
   ret=write(sock,&direct,sizeof(int));
