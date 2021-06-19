@@ -1,11 +1,8 @@
 #ifndef INIT_H 
 #define INIT_H 
-
-#include <stdio.h>
+#include "pse.h"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <time.h>
-#include <stdlib.h>
+
 
 #define WIDTH 1280
 #define HEIGHT 720
@@ -22,11 +19,10 @@
 SDL_Window *window;
 SDL_Renderer *renderer;
 
-int continuer;
-int touche8,touche2,touche3,touche9;
-SDL_Rect joueur1;
-SDL_Rect joueur2;
-SDL_Rect Balle;
+int pursue;
+SDL_Rect player1;
+SDL_Rect player2;
+SDL_Rect Ball;
 
 int score_j1,score_j2;
 SDL_Event event;
@@ -38,6 +34,6 @@ typedef struct Data
   int ball_x, ball_y;  
 } Data;
 
-void initialiser_video();
+void initialize_video();
 unsigned char listen_event(SDL_Event event) ;
 #endif

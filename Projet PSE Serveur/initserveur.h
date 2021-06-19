@@ -5,27 +5,15 @@
 #define HEIGHT 720
 #define WIDTH_PLAYER 30
 #define HEIGHT_PLAYER 150
-#define VITESSE_PLAYER 12
+#define PLAYER_SPEED 30
 #define WIDTH_BALL 30
 #define HEIGHT_BALL 30
-#define VITESSE_BALL 14
+#define BALL_SPEED 18
 
 #define POSITION_X_J1 100
 #define POSITION_X_J2 1150
 
 #define CMD "serveur"
-
-typedef struct Salle_de_Jeu
-{
-  pthread_t idThread;               /* identifiant du thread */
-  int libre;                  /* indicateur de terminaison */
-/* ajouter donnees specifiques après cette ligne */
-  int tid;                    /* identifiant logique */
-  int socket_j1;                  /* canal de communication joueur1*/
-  int socket_j2;                  /*canal de communication joueur2*/
-  sem_t sem_j1;                  /* semaphore de reveil joueur1 */
-  sem_t sem_j2;                 /*semaphore de reveil joueur2*/
-} Salle_de_Jeu;
 
 typedef struct Data
 {
@@ -34,12 +22,35 @@ typedef struct Data
   int ball_x, ball_y;  
 } Data;
 
+typedef struct GamingRoom
+{
+  pthread_t idRoom;               /* identifiant du thread */
+  pthread_t P1_checker; //thread listening to P1 messages. Allows to change P1 coordinates.
+  pthread_t P2_checker;//thread listening to P2 messages. Allows to change P1 coordinates.
+  int ret;                  /* indicateur de bonne lecture */
+  int is_free;
+  int new_canal; /*new player*/
+/* ajouter donnees specifiques après cette ligne */
+  int tid;                    /* identifiant logique */
+  int socket_j1;                  /* canal de communication joueur1*/
+  int socket_j2;                  /*canal de communication joueur2*/
+  sem_t sem_Room;                  /* semaphore de reveil GamingRoom*/
+  sem_t sem_P1_checker;
+  sem_t sem_P2_checker;
+  Data data; //Structure allowing data to be sent to clients. 
+} GamingRoom;
+
+
+
 void initBall(Data *data,int *direct_h, int *direct_v);
 void updateBall(Data *data,int *direct_h, int *direct_v);
-void *threadSalleJeu(void *arg);
+void *threadGamingRoom(void *arg);
 void updatePlayer(int *player, int *direction);
-void sendData(int sock_P1, int sock_P2, Data *data);
+void sendData(int sock_P1, int sock_P2, Data *data,GamingRoom *my_room);
+void createCohorteWorkers();
+void *threadP1Checker(void *arg);
+void *threadP2Checker(void *arg);
 
-Salle_de_Jeu salle[NB_THREADS];
+GamingRoom room[NB_THREADS];
 
 int continuer;
