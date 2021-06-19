@@ -44,4 +44,5 @@ int sock;
 char  dest[20];
 pthread_t receiver_t;
 Data data;
+int P1_score, P2_score;
 #endif
