@@ -16,14 +16,16 @@ void *threadReceiver(void *arg) //thread de lecture des donnée envoyées par le
       pursue=0;
       sleep(1);
     }
-	if(P1_score!=Data.score_P1||P1_score!=Data.score_P1){
-		printf("P1: %i		P2: %i", Data.score_P1 , Data.score_P1);
-		P1_score=Data.score_P1;
-		P2_score=Data.score_P2;}	
+    if(P1_score!=my_data->score_P1||P2_score!=my_data->score_P2)
+    {
+      printf("Score: P1: %i, P2: %i\n", my_data->score_P1 , my_data->score_P2);
+      P1_score=my_data->score_P1;
+      P2_score=my_data->score_P2;
+    }	
   }
 }
 
-void sendDirection(int sock,int direct) // Envoie l'inforamtion des touches appuyé au seveur (2 si c'est la touche 2 (down) et 3 si c'est la touche 8 (up))
+void sendDirection(int sock,int direct) // Envoie l'information des touches appuyé au seveur (2 si c'est la touche 2 (down) et 3 si c'est la touche 8 (up))
 {
   int ret;
   ret=write(sock,&direct,sizeof(int));
@@ -98,7 +100,8 @@ int main(int argc, char *argv[]) {
       SDL_RenderPresent(renderer);
       SDL_Delay(16); 
     }while(pursue==1);
-      	/* Impératif pour quitter en sécurité. ----------------------------------------------------------------------------------------------------------*/
+    
+    /* Impératif pour quitter en sécurité. ----------------------------------------------------------------------------------------------------------*/
 		if(NULL != renderer)
         SDL_DestroyRenderer(renderer);
     if(NULL != window)
@@ -113,7 +116,7 @@ int main(int argc, char *argv[]) {
 }
   
 
-unsigned char listen_event(SDL_Event event)//Permet de gérer l'appui et le relâchement des touches
+unsigned char listen_event(SDL_Event event)//Permet de gérer l'appui des touches
 { 
 	unsigned char pursue=1; 
 	while(SDL_PollEvent(&event)) 
@@ -125,8 +128,8 @@ unsigned char listen_event(SDL_Event event)//Permet de gérer l'appui et le rel�
                 {
                 	switch(event.key.keysym.sym)
                 	{
-                		case SDLK_KP_2:{sendDirection(sock,2);break;}
-                		case SDLK_KP_8:{sendDirection(sock,3);break;}
+                		case SDLK_DOWN:{sendDirection(sock,2);break;}
+                		case SDLK_UP:{sendDirection(sock,3);break;}
 
                 		default:{ break;}
                 	};break;
@@ -139,9 +142,9 @@ unsigned char listen_event(SDL_Event event)//Permet de gérer l'appui et le rel�
 
 
 
-void initialize_video()
+void initialize_video()/* Initialisation, création de la fenêtre et du rendu. --------------------------------------------------------------*/
+
 {
-    /* Initialisation, création de la fenêtre et du renderer. --------------------------------------------------------------*/
     if(0 != SDL_Init(SDL_INIT_VIDEO))
     {
         fprintf(stderr, "Erreur SDL_Init : %s", SDL_GetError());
@@ -152,7 +155,7 @@ void initialize_video()
     	SDL_Quit();
     }
     
-    window = SDL_CreateWindow("Pong", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH,HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Pong Online", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH,HEIGHT, SDL_WINDOW_SHOWN);
     if(NULL == window)
     {
         fprintf(stderr, "Erreur SDL_CreateWindow : %s", SDL_GetError());

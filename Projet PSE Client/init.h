@@ -27,10 +27,7 @@ SDL_Rect Ball;
 int score_j1,score_j2;
 SDL_Event event;
 
-
-
-
-typedef struct Data
+typedef struct Data //C'est la structure réceptionnée par le client.
 {
   int P1_y,P2_y;
   int score_P1,score_P2;
@@ -40,9 +37,11 @@ typedef struct Data
 void initialize_video();
 unsigned char listen_event(SDL_Event event) ;
 
+
 int sock;
 char  dest[20];
 pthread_t receiver_t;
 Data data;
 int P1_score, P2_score;
+
 #endif
